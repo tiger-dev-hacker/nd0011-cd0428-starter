@@ -72,7 +72,6 @@ const getProjectsSection = async () => {
       const projectCard = document.createElement("div");
       projectCard.classList.add("projectCard");
       projectCard.style.backgroundImage = `url(${card_image})`;
-      console.log(card_image);
       projectCard_title = document.createElement("h4");
       projectCard_title.textContent = project_name;
       projectCard.append(projectCard_title);
@@ -82,29 +81,99 @@ const getProjectsSection = async () => {
       projectCard.id = project_id;
       fragment.append(projectCard);
     });
+    
     projectList.append(fragment);
+    projectList.addEventListener('pointerdown', changeSpotLightTiles); 
   } catch (error) {
     console.error(error);
   }
 };
 
 const createSpotLightTitles = async() => {
-    try{
+    try{  
+        const fragment = document.createDocumentFragment(); 
+
+        const project_parent_section = document.querySelector('#projectSection'); 
         const projectSpotlight = document.querySelector('#projectSpotlight'); 
         const spotLightTitles = document.querySelector('#spotlightTitles'); 
 
         const projectInfoList = await getProjectsList(); 
 
-        projectSpotlight.backgroundImage = `url(${projectInfoList[0].spotlight_image})`;
+        projectSpotlight.style.backgroundImage = `url(${projectInfoList[0].spotlight_image})`;
 
         const spotlightTitles_heading = document.createElement('h3'); 
+        const spotlightTitles_description = document.createElement('p');
+        const spotlightTitles_url = document.createElement('a');
+
+        spotlightTitles_heading.textContent = projectInfoList[0].project_name;
+        spotlightTitles_description.textContent = projectInfoList[0].long_description;
+        spotlightTitles_url.textContent = "Click here to learn more ..."; 
+        spotlightTitles_url.href = projectInfoList[0].url; 
+
+        spotLightTitles.append(spotlightTitles_heading,spotlightTitles_description, spotlightTitles_url); 
+        projectSpotlight.append(spotLightTitles);
+        fragment.append(projectSpotlight);
+        project_parent_section.append(fragment); 
         
+
     }
     catch(error)
     {
         console.error(error); 
     }
 }
+const getInfoFromProjectList = async(project_id) => {
+    const projectInfoList = await getProjectsList(); 
+    let info_Object; 
+    projectInfoList.forEach((projectInfo) => {
+        if(projectInfo.project_id === project_id)
+        {
+             info_Object = {
+                "spotlight_image" : projectInfo.spotlight_image,
+                "project_name" : projectInfo.project_name,
+                "long_description" : projectInfo.long_description,
+                "url" : projectInfo.url
+            }
+        }
+    })
+    return info_Object; 
+}
+
+const changeSpotLightTiles = async(event) => {
+    console.log("Change spotlight called\n"); 
+    const project_id = event.target.closest('.projectCard').id;
+    console.log(project_id); 
+
+
+    const {spotlight_image, project_name, long_description, url} = await getInfoFromProjectList(project_id);
+    console.log(spotlight_image); 
+    console.log(project_name); 
+    console.log(long_description); 
+    console.log(url); 
+
+    const projectSpotlight = document.querySelector('#projectSpotlight'); 
+    const spotLightTitles = document.querySelector('#spotlightTitles'); 
+
+    projectSpotlight.style.backgroundImage = `url(${spotlight_image ?? '../images/spotlight_placeholder_bg.webp'})`;
+    console.log("Setting background to.."); 
+
+    spotLightTitles.innerHTML = ""; 
+
+    const spotlightTitles_heading = document.createElement('h3'); 
+    spotlightTitles_heading.textContent = project_name;
+
+    const spotlightTitles_description = document.createElement('p');
+    spotlightTitles_description.textContent = long_description;
+
+    const spotlightTitles_url = document.createElement('a');
+    spotlightTitles_url.textContent = "Click here to learn more ..."; 
+
+    spotlightTitles_url.href = url; 
+    spotLightTitles.append(spotlightTitles_heading,spotlightTitles_description, spotlightTitles_url); 
+    
+    
+}
 
 getAboutMeSection();
+createSpotLightTitles(); 
 getProjectsSection();
